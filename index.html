@@ -1,10 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html>
+    <head>
+        <title>Vue.js Pet Depot</title>
+        <meta charset="utf-8">
+        <script src="https://unpkg.com/vue"></script>
+        <link rel="stylesheet" type="text/css" href="assets/css/app.css"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        crossorigin="anonymous">
+    </head>
+    <body>
+    <div class="content container">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="app">
+                    <header>
+                        <div class="navbar navbar-default">
+                            <h1 v-text="sitename"></h1>
+                                <!--<h2>Другой варинат вывода: {{ sitename }}</h2>-->
+                        </div>
+                        <div class="nav navbar-nav navbar-right cart">
+                            <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">
+                                <span class="glyphicon glyphicon-shopping-cart">
+                                    {{ cartItemCount }}
+                                </span>
+                                Checkout
+                            </button>
+                        </div>
+                    </header>
+                    <main>
+                        <div class="container">
+                            <div class="row product">
+                                <div v-if="showProduct">
+                                    <div class="col">
+                                        <figure>
+                                            <img v-bind:src="product.image">
+                                            <img :src="product.image">
+                                        </figure>
+                                    </div>
+                                    <div class="col col-expand">
+                                        <h1 v-text="product.title">Неотображаемый текст</h1>
+                                        <p v-html="product.description">Текст текст текст</p>
+                                        <p class="price">{{ product.price | formatPrice }}</p>
+                                        <button class="btn btn-primary" v-if="canAddToCart" v-on:click="addToCart">     <!--v-show="canAddToCart"-->
+                                            Добавить в корзину
+                                        </button>
+                                        <button class="btn btn-primary" disabled v-else>     <!--v-show="canAddToCart"-->
+                                            Добавить в корзину
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else>
 
-</body>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+
+                <script type="text/javascript">
+                    var APP_LOG_LIFECYCLE_EVENTS = false;
+                    var webstore = new Vue({
+                        el: "#app",
+                        data: {
+                            showProduct: true,
+                            sitename: 'Vue.js Pet Depot',
+                            product: {
+                                id: 1001,
+                                title: "Кошачий корм, 250гр",
+                                description: "Описание кошачьего корма. <em>Вкусная и полезная еда для вашего питомца</em>",
+                                price: 1300,
+                                image: "assets/images/product-fullsize.png",
+                                availableInventory: 5
+                            },
+                            cart: []
+                        },
+                        computed: {
+                            cartItemCount: function () {
+                                return this.cart.length;
+                            },
+                            canAddToCart: function () {
+                                return this.product.availableInventory > this.cartItemCount;
+                            }
+                        },
+                        methods: {
+                            addToCart: function() {
+                                this.cart.push(this.product.id);
+                            },
+                            showCheckout: function() {  /* или просто showCheckout() */
+                                this.showProduct = this.showProduct ? false : true; /* фунция переключения значений */
+                            }
+                        },
+
+                        filters: {
+                            formatPrice: function(price) {
+                                if (!parseInt(price)) {
+                                    return "";
+                                }
+                                if (price > 99999) {
+                                    var priceString = (price / 100).toFixed(2);
+                                    var priceArray = priceString.split("").reverse();
+                                    var index = 3;
+                                    while (priceArray.length > index + 3) {
+                                      priceArray.splice(index+3, 0, ",");
+                                      index += 4;
+                                    }
+                                    return "$" + priceArray.reverse().join("");
+                                } else {
+                                    return "$" + (price / 100).toFixed(2);
+                                }
+                            }
+                        },
+
+                        beforeCreate: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("beforeCreate");
+                            }
+                        },
+                        created: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("created");
+                            }
+                        },
+                        beforeMount: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("beforeMount");
+                            }
+                        },
+                        mounted: function() {
+                        if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("mounted");
+                            }
+                        },
+                        beforeUpdate: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("beforeUpdate");
+                            }
+                        },
+                        updated: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("updated");
+                            }
+                        },
+                        beforeDestroy: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("beforeDestroy ");
+                            }
+                        },
+                        destroyed: function() {
+                            if (APP_LOG_LIFECYCLE_EVENTS) {
+                                console.log("destroyed");
+                            }
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+    </body>
 </html>

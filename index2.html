@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Глобальные компоненты</title>
+    <script src="https://unpkg.com/vue"></script>
+</head>
+<body>
+    <div id="app">
+        <!--<my-best-component :text="message"></my-best-component>-->
+        <!--<my-best-component :text="message"></my-best-component>-->
+        <!--<my-best-component :text="message"></my-best-component>-->
+        <my-best-component :num="myNumber" :str="passedString" :even="myNumber" :obj="passedObject"></my-best-component>
+    </div>
+</body>
+<script>
+    /*Vue.component("MyComponent", {
+        template: "<div>Hello World</div>"
+    });*/
+
+    /***Все типы
+    * String
+    * Number
+    * Boolean
+    * Function
+    * Object
+    * Array
+    * Symbol
+    ****/
+
+    const Component = {
+        /*template: '<div>{{ text }}, friends! <button v-on:click="counter += 1">{{ counter }}</button></div>',*/
+        template: "<div>Number: {{ num }}<br>" +
+        "String: {{ str }}<br>" +
+        "IsEven?: {{ even }}<br>" +
+        "Object: {{ obj }}</div>",
+        props: {
+            num: {
+                type: Number,
+                required: true
+            },
+            str: {
+                type: String,
+                default: "Hello World"
+            },
+            obj: {
+                type: Object,
+                default: () => {
+                    return { new_message: "Hello from children object" }
+                }
+            },
+            even: {
+                validator: (value) => {
+                    return (value % 2 === 0)
+                }
+            }
+        }
+        /*data() {
+            return {
+                counter: 0
+            }
+        }*/
+    };
+    new Vue({
+        el: "#app",
+        components: { MyBestComponent: Component },
+        data() {
+            return {
+                message: "Hello World",
+
+                passedString: "Hello from parent!",
+                myNumber: 43,
+                passedObject: { new_message: 'Passed Object' }
+            }
+        }
+    });
+</script>
+</html>

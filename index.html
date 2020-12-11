@@ -7,6 +7,7 @@
         <link rel="stylesheet" type="text/css" href="assets/css/app.css"/>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
         crossorigin="anonymous">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
     </head>
     <body>
     <div class="content container">
@@ -14,124 +15,140 @@
             <div class="col-md-12">
                 <div id="app">
                     <header>
-                        <div class="navbar navbar-default">
-                            <h1 v-text="sitename"></h1>
-                                <!--<h2>Другой варинат вывода: {{ sitename }}</h2>-->
-                        </div>
-                        <div class="nav navbar-nav navbar-right cart">
-                            <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">
-                                <span class="glyphicon glyphicon-shopping-cart">
-                                    {{ cartItemCount }}
-                                </span>
-                                Checkout
-                            </button>
+                        <div class="col-md-12">
+                            <div class="navbar navbar-default">
+                                <div class="navbar-header">
+                                    <h1>{{ sitename }}</h1>
+                                </div>
+                                <div class="nav navbar-nav navbar-right cart">
+                                    <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">
+                                        <span class="glyphicon glyphicon-shopping-cart">{{ cartItemCount }}</span> Checkout
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </header>
                     <main>
                         <div class="container">
-                            <div class="row product">
-                                <div v-if="showProduct">
-                                    <div class="col">
-                                        <figure>
-                                            <img v-bind:src="product.image">
-                                            <img :src="product.image">
-                                        </figure>
-                                    </div>
-                                    <div class="col col-expand">
-                                        <h1 v-text="product.title">Неотображаемый текст</h1>
-                                        <p v-html="product.description">Текст текст текст</p>
-                                        <p class="price">{{ product.price | formatPrice }}</p>
-                                        <button class="btn btn-primary" v-if="canAddToCart" v-on:click="addToCart">     <!--v-show="canAddToCart"-->
-                                            Добавить в корзину
-                                        </button>
-                                        <button class="btn btn-primary" disabled v-else>     <!--v-show="canAddToCart"-->
-                                            Добавить в корзину
-                                        </button>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <div class="col-md-6">
-                                        <strong>First Name:</strong>
-                                        <input v-model.lazy.trim="order.firstName" class="form-control"/>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <strong>Last Name:</strong>
-                                        <input v-model.trim="order.lastName" class="form-control"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-md-12"><strong>Address:</strong></div>
-                                        <div class="col-md-12">
-                                            <input v-model.trim="order.address" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-md-12"><strong>City:</strong></div>
-                                        <div class="col-md-12">
-                                            <input v-model.trim="order.city" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">    <!--  -->
-                                        <div class="col-md-2">
-                                            <strong>State:</strong>
-                                            <select v-model="order.state" class="form-control">
-                                                <option disaЬled value="">State</option>
-                                                <option v-for="(state, key, index) in states" v-bind:value="state">
-                                                    {{ key }} - {{ index }}
-                                                </option>
-                                                <!--<option v-bind:value="states.AL">AL</option>
-                                                <option v-bind:value="states.AR">AR</option>
-                                                <option v-bind:value="states.CA">CA</option>
-                                                <option v-bind:value="states.NV">NV</option>-->
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-md-6 col-md-offset-4">
-                                            <strong>Zip / Postal Code:</strong>
-                                            <input v-model.number="order.zip" class="form-control"/>
-                                        </div>
-                                    </div>
 
-                                    <div class="form-group">    <!-- флажок -->
-                                        <div class="col-md-6 boxes">
-                                            <input type="checkbox" id="gift" value="Какое-то значение"
-                                                   v-model="order.gift"
-                                                   v-bind:true-value="order.sendGift"
-                                                   v-bind:false-value="order.dontSendGift">
-
-                                            <label for="gift">Ship As Gift?: {{ order.gift }}</label>
+                            <div v-if="showProduct">
+                                <div v-for="product in sortedProducts">
+                                    <div class="row product">
+                                        <div class="col-md-5 col-md-offset-0">
+                                            <figure>
+                                                <!--<img v-bind:src="product.image">-->
+                                                <img :src="product.image" class="thumbnail">
+                                            </figure>
                                         </div>
-                                    </div>
-
-                                    <div class="form-group">    <!-- переключатель -->
-                                        <div class="col-md-6 boxes">
-                                            <input type="radio" id="home" v-bind:value="order.home" v-model="order.method">
-                                            <label for="home">Home</label>
-                                            <input type="radio" id="business" v-bind:value="order.business" v-model="order.method">
-                                            <label for="business">Business</label>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-md-6">
-                                            <button type="submit" class="btn btn-primary submit" v-on:click="submitForm">
-                                                Place Order
+                                        <div class="col-md-6 col-md-offset-1 description">
+                                            <h1 v-text="product.title">Неотображаемый текст</h1>
+                                            <p v-html="product.description">Текст текст текст</p>
+                                            <p class="price">{{ product.price | formatPrice }}</p>
+                                            <button class="btn btn-primary" v-if="canAddToCart(product)" v-on:click="addToCart(product)">     <!--v-show="canAddToCart"-->
+                                                Добавить в корзину
                                             </button>
+                                            <button class="btn btn-primary" disabled v-else>     <!--v-show="canAddToCart"-->
+                                                Добавить в корзину
+                                            </button>
+                                            <span class="inventory-message" v-if="product.availableInventory - cartCount(product.id) === 0">
+                                                Весь товар закончился!<!-- Можно вынесли в вычислияемое свойство, но для простоты оставим так. -->
+                                            </span>
+                                            <span class="inventory-message" v-else-if="product.availableInventory - cartCount(product.id) < 5">
+                                                Осталось всего {{ product.availableInventory - cartCount(product.id) }} шт.
+                                            </span>
+                                            <span class="inventory-message" v-else>
+                                                Успей купить!
+                                            </span>
+                                            <div class="rating">
+                                                <span v-for="n in 5" v-bind:class="{'rating-active': checkRating(n, product)}">☆</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-12 verify">
-                                        <pre>
-                                            First Name: {{ order.firstName }}
-                                            Last Name: {{ order.lastName }}
-                                            Address: {{ order.address }}
-                                            City: {{ order.city }}
-                                            Zip: {{ order.zip }}
-                                            State: {{ order.state }}
-                                            Method: {{ order.method }}
-                                            Gift: {{ order.gift }}
-                                        </pre>
                                     </div>
                                 </div>
                             </div>
+                            <div v-else>
+                                <div class="col-md-6">
+                                    <strong>First Name:</strong>
+                                    <input v-model.lazy.trim="order.firstName" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Last Name:</strong>
+                                    <input v-model.trim="order.lastName" class="form-control"/>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-12"><strong>Address:</strong></div>
+                                    <div class="col-md-12">
+                                        <input v-model.trim="order.address" class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-12"><strong>City:</strong></div>
+                                    <div class="col-md-12">
+                                        <input v-model.trim="order.city" class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">    <!--  -->
+                                    <div class="col-md-2">
+                                        <strong>State:</strong>
+                                        <select v-model="order.state" class="form-control">
+                                            <option disaЬled value="">State</option>
+                                            <option v-for="(state, key, index) in states" v-bind:value="state">
+                                                {{ key }} - {{ index }}
+                                            </option>
+                                            <!--<option v-bind:value="states.AL">AL</option>
+                                            <option v-bind:value="states.AR">AR</option>
+                                            <option v-bind:value="states.CA">CA</option>
+                                            <option v-bind:value="states.NV">NV</option>-->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-6 col-md-offset-4">
+                                        <strong>Zip / Postal Code:</strong>
+                                        <input v-model.number="order.zip" class="form-control"/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">    <!-- флажок -->
+                                    <div class="col-md-6 boxes">
+                                        <input type="checkbox" id="gift" value="Какое-то значение"
+                                               v-model="order.gift"
+                                               v-bind:true-value="order.sendGift"
+                                               v-bind:false-value="order.dontSendGift">
+
+                                        <label for="gift">Ship As Gift?: {{ order.gift }}</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">    <!-- переключатель -->
+                                    <div class="col-md-6 boxes">
+                                        <input type="radio" id="home" v-bind:value="order.home" v-model="order.method">
+                                        <label for="home">Home</label>
+                                        <input type="radio" id="business" v-bind:value="order.business" v-model="order.method">
+                                        <label for="business">Business</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn btn-primary submit" v-on:click="submitForm">
+                                            Place Order
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 verify">
+                                    <pre>
+                                        First Name: {{ order.firstName }}
+                                        Last Name: {{ order.lastName }}
+                                        Address: {{ order.address }}
+                                        City: {{ order.city }}
+                                        Zip: {{ order.zip }}
+                                        State: {{ order.state }}
+                                        Method: {{ order.method }}
+                                        Gift: {{ order.gift }}
+                                    </pre>
+                                </div>
+                            </div>
+
                         </div>
                     </main>
                 </div>
@@ -143,14 +160,15 @@
                         data: {
                             showProduct: true,
                             sitename: 'Vue.js Pet Depot',
-                            product: {
+                            /*product: {
                                 id: 1001,
                                 title: "Кошачий корм, 250гр",
                                 description: "Описание кошачьего корма. <em>Вкусная и полезная еда для вашего питомца</em>",
                                 price: 1300,
                                 image: "assets/images/product-fullsize.png",
-                                availableInventory: 5
-                            },
+                                availableInventory: 10,
+                                rating: 3
+                            },*/
                             order: {
                                 firstName: "",  /* свойство добавится автоматически, но для наглядности добавим */
                                 lastName: "",   /* -//- */
@@ -165,6 +183,7 @@
                                 sendGift: "Упаковать  подарок",
                                 dontSendGift: "Не упаковывать подарок",
                             },
+                            products: [],
                             cart: [],
                             states: {
                                 AL: 'Alabama',
@@ -177,19 +196,47 @@
                             cartItemCount: function () {
                                 return this.cart.length;
                             },
-                            canAddToCart: function () {
-                                return this.product.availableInventory > this.cartItemCount;
+                            sortedProducts() {
+                                if (this.products.length > 0) {
+                                    let productsArray = this.products.slice(0);
+                                    console.log(productsArray);
+                                    console.log(this.products);
+                                    function compare(a, b) {
+                                        if (a.title.toLowerCase() < b.title.toLowerCase())
+                                            return -1;
+                                        if (a.title.toLowerCase() > b.title.toLowerCase())
+                                            return 1;
+                                        return 0;
+                                    }
+                                    return productsArray.sort(compare);
+                                }
                             }
                         },
                         methods: {
-                            addToCart: function() {
-                                this.cart.push(this.product.id);
+                            checkRating: function(n, myProduct) {
+                                return myProduct.rating - n >= 0;
+                            },
+                            addToCart: function(aProduct) {
+                                this.cart.push(aProduct.id);
                             },
                             showCheckout: function() {  /* или просто showCheckout() */
                                 this.showProduct = this.showProduct ? false : true; /* фунция переключения значений */
                             },
                             submitForm() {
                                 alert("Отправлено");
+                            },
+                            canAddToCart: function (aProduct) {
+                                /*eturn this.product.availableInventory > this.cartItemCount;*/
+                                return aProduct.availableInventory > this.cartCount(aProduct.id);
+                            },
+                            cartCount(id) {
+                                let count = 0;
+                                for (let i = 0; i < this.cart.length; i++) {
+                                    if (this.cart[i] === id) {
+                                        count++;
+                                    }
+                                }
+                                return count;
                             }
                         },
 
@@ -212,8 +259,15 @@
                                 }
                             }
                         },
+                        created: function() {
+                            axios.get('products')
+                                .then((response) => {
+                                this.products=response.data.products;
+                                console.log(this.products);
+                            });
+                        },
 
-                        beforeCreate: function() {
+                        /*beforeCreate: function() {
                             if (APP_LOG_LIFECYCLE_EVENTS) {
                                 console.log("beforeCreate");
                             }
@@ -252,7 +306,7 @@
                             if (APP_LOG_LIFECYCLE_EVENTS) {
                                 console.log("destroyed");
                             }
-                        }
+                        }*/
                     });
                 </script>
             </div>
